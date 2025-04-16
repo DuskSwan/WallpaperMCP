@@ -1,7 +1,15 @@
-# vscode files
-*.json
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+.python-version
 
-# python files
-*.pyc
-__pycache__
-config.py
+# Virtual environments
+.venv
+.env
+
+# vscode
+.vscode/

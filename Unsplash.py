@@ -5,7 +5,11 @@ from pathlib import Path
 from PIL import Image
 from io import BytesIO
 
-from config import UNSPLASH_API as ACCESS_KEY  # 从 config.py 中导入 ACCESS_KEY
+import os
+from dotenv import load_dotenv
+
+load_dotenv()  # 加载 .env 文件
+ACCESS_KEY = os.getenv("UNSPLASH_API")
 
 
 def analyze_response(response):
