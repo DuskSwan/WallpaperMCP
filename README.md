@@ -1,2 +1,5 @@
 # WallpaperMCP
-An MCP service tool for local use by the author and for AI to call
+
+自己写的一个用于壁纸管理的MCP server。
+
+目前是从Unsplash获取壁纸，支持的平台是Windows10.
