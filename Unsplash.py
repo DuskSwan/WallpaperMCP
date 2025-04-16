@@ -89,7 +89,7 @@ def download_one_image(image_url, save_dir='.', img_name=None):
         with open(save_path, 'wb') as file:
             file.write(response.content)
         print(f"图片已成功保存到 {save_path}")
-        return save_path
+        return str(save_path.resolve)
     else:
         print("下载图片失败！")
         return None
@@ -106,4 +106,4 @@ if __name__ == "__main__":
     wallpaper_url = get_random_wallpaper()
     img_path = download_one_image(wallpaper_url, ".")
     if img_path:
-        set_wallpaper(str(img_path.resolve()))
+        set_wallpaper(img_path)
