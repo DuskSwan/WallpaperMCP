@@ -48,15 +48,27 @@ def analyze_response(response):
     
     return response_info
 
+@mcp.tool()
 def show_img(image_url: str) -> str:
-    """显示图片"""
+    """
+    展示图片
+
+    参数:
+        image_url: 图片的URL地址字符串。
+    返回:
+        显示图片结果的字符串描述。
+    
+    """
     response = requests.get(image_url)
-    if response.status_code == 200:
-        image = Image.open(BytesIO(response.content))
-        image.show()
-        return "图片已显示"
-    else:
-        return f"请求失败，状态码: {response.status_code}"
+    try:
+        if response.status_code == 200:
+            image = Image.open(BytesIO(response.content))
+            image.show()
+            return "图片已显示"
+        else:
+            return f"请求失败，状态码: {response.status_code}"
+    except Exception as e:
+        return f"遇到错误: {str(e)}"
 
 @mcp.tool()
 def get_random_wallpaper() -> str:
@@ -75,7 +87,7 @@ def get_random_wallpaper() -> str:
 @mcp.tool()
 def get_flitter_image_url(query: str = 'nature', color: str = 'blue', 
                   orientation: str = 'landscape', page: int = 1, 
-                  per_page: int = 30, order_by: str = 'latest', get_index: int = 0) -> str:
+                  per_page: int = 30, order_by: str = 'popular', get_index: int = 0) -> str:
     """
     根据用户提供的条件获取图片的URL。
 
