@@ -13,3 +13,6 @@ wheels/
 
 # vscode
 .vscode/
+
+# saved img
+*.jpg
