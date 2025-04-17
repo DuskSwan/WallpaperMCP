@@ -121,13 +121,13 @@ def get_flitter_image_url(query: str = 'nature', color: str = 'blue',
         return f"遇到错误: {str(e)}"
 
 @mcp.tool()
-def download_one_image(image_url: str, save_dir: str = '.', img_name: str = "wallpaper.jpg") -> str:
+def download_one_image(image_url: str, save_dir: str = './imgs', img_name: str = "wallpaper.jpg") -> str:
     """
     下载图片到指定目录
     
     参数:
         image_url: 图片的URL地址字符串。
-        save_dir: 保存图片的目录，默认当前目录。
+        save_dir: 保存图片的目录，默认为脚本目录中的imgs。
         img_name: 保存的图片名称，默认使用"wallpaper.jpg"。
     
     返回:
