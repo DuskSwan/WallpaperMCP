@@ -1,109 +1,87 @@
 import requests
 import ctypes
 from pathlib import Path
-
 from PIL import Image
 from io import BytesIO
-
 import os
 from dotenv import load_dotenv
+from mcp.server.fastmcp import FastMCP
 
-load_dotenv()  # 加载 .env 文件
-ACCESS_KEY = os.getenv("UNSPLASH_API")
+# 加载 .env 文件
+load_dotenv()  
+Unsplash_KEY = os.getenv("UNSPLASH_API")
 
+# 初始化 MCP 服务器
+mcp = FastMCP("wallpaper-server")
 
 def analyze_response(response):
     """分析响应内容"""
-    # 检查请求是否成功
     if response.status_code != 200:
-        print(f"请求失败，状态码: {response.status_code}")
-        return
+        return f"请求失败，状态码: {response.status_code}"
     
-    # 获取响应的内容类型
     content_type = response.headers.get('Content-Type', '').lower()
     
-    print(f"响应状态码: {response.status_code}")
-    print(f"响应内容类型: {content_type}")
+    response_info = f"响应状态码: {response.status_code}\n响应内容类型: {content_type}\n"
     
-    # 根据内容类型处理不同的数据
     if 'json' in content_type:
-        # 如果响应内容是 JSON 格式
         try:
             json_data = response.json()  # 解析 JSON 数据
-            print("响应内容（JSON 格式）：")
-            print(json_data)
+            response_info += "响应内容（JSON 格式）：\n" + str(json_data)
         except ValueError:
-            print("响应内容不是有效的 JSON 格式")
+            response_info += "响应内容不是有效的 JSON 格式"
     
     elif 'html' in content_type:
-        # 如果响应内容是 HTML 格式
-        print("响应内容（HTML 格式）：")
-        print(response.text[:200] + "...")  # 打印 HTML 内容的前 200 个字符
+        response_info += "响应内容（HTML 格式）：\n" + response.text[:200] + "..."
     
     elif 'image' in content_type:
-        # 如果响应内容是图片（二进制数据）
-        print("响应内容是图片，保存为文件")
-        # 使用 Pillow 显示图片
         image = Image.open(BytesIO(response.content))
         image.show()
-        print("图片已显示")
+        response_info += "图片已显示"
     
     elif 'plain' in content_type:
-        # 如果响应内容是纯文本
-        print("响应内容（纯文本）：")
-        print(response.text[:200] + "...")
+        response_info += "响应内容（纯文本）：\n" + response.text[:200] + "..."
     
     else:
-        print("响应内容类型未知，原始内容：")
-        print(response.text[:200] + "...")  # 打印内容的前 200 个字符
+        response_info += "响应内容类型未知，原始内容：\n" + response.text[:200] + "..."
+    
+    return response_info
 
-def get_random_wallpaper():
-    """获取随机壁纸的url"""
-    url = f"https://api.unsplash.com/photos/random?query=wallpaper&client_id={ACCESS_KEY}"
-    # 发送请求
+@mcp.tool()
+def get_random_wallpaper() -> str:
+    """获取随机壁纸的URL"""
+    url = f"https://api.unsplash.com/photos/random?query=wallpaper&client_id={Unsplash_KEY}"
     response = requests.get(url)
-    # 如果请求成功
-    if response.status_code == 200:
-        # 解析返回的 JSON 数据
-        data = response.json()
-        # 获取壁纸的图片URL
-        image_url = data['urls']['raw']
-        return image_url
-    else:
-        print(f"Error status code: {response.status_code}")
-        return None
+    try:
+        if response.status_code == 200:
+            data = response.json()
+            return data['urls']['raw']
+        else:
+            return f"Error status code: {response.status_code}"
+    except Exception as e:
+        return f"Error: {str(e)}"
 
-def download_one_image(image_url, save_dir='.', img_name=None):
+@mcp.tool()
+def download_one_image(image_url: str, save_dir: str = '.', img_name: str = None) -> str:
     """下载图片到指定目录"""
     response = requests.get(image_url)
-
-    # analyze_response(response)  # 分析响应内容
-    
-    # 检查请求是否成功
     if response.status_code == 200:
-        # 创建文件夹（如果不存在）
         save_path = Path(save_dir) / (img_name if img_name else "wallpaper.jpg")
         save_path.parent.mkdir(parents=True, exist_ok=True)
-        
-        # 保存图片到指定路径
         with open(save_path, 'wb') as file:
             file.write(response.content)
-        print(f"图片已成功保存到 {save_path}")
-        return str(save_path.resolve)
+        return f"图片已成功保存到 {save_path.resolve()}"
     else:
-        print("下载图片失败！")
-        return None
+        return "下载图片失败！"
 
-def set_wallpaper(image_path: str):
+@mcp.tool()
+def set_wallpaper(image_path: str) -> str:
+    """设置壁纸"""
     unicode_image_path = ctypes.c_wchar_p(image_path)
     result = ctypes.windll.user32.SystemParametersInfoW(20, 0, unicode_image_path, 3)
     if result:
-        print(f"壁纸已成功设置为 {image_path}")
+        return f"壁纸已成功设置为 {image_path}"
     else:
-        print(f"设置壁纸失败！")
+        return "设置壁纸失败！"
 
 if __name__ == "__main__":
-    wallpaper_url = get_random_wallpaper()
-    img_path = download_one_image(wallpaper_url, ".")
-    if img_path:
-        set_wallpaper(img_path)
+    mcp.run(transport='stdio')
