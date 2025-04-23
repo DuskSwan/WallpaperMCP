@@ -64,15 +64,15 @@ def show_img(image_url: str) -> str:
         if response.status_code == 200:
             image = Image.open(BytesIO(response.content))
             image.show()
-            return "图片已显示"
+            return "image show success"
         else:
-            return f"请求失败，状态码: {response.status_code}"
+            return f"request fails, error code: {response.status_code}"
     except Exception as e:
-        return f"遇到错误: {str(e)}"
+        return f"meet error: {str(e)}"
 
 @mcp.tool()
 def get_random_wallpaper() -> str:
-    """获取随机壁纸的URL"""
+    """get random wallpaper url"""
     url = f"https://api.unsplash.com/photos/random?query=wallpaper&client_id={Unsplash_KEY}"
     response = requests.get(url)
     try:
@@ -85,23 +85,23 @@ def get_random_wallpaper() -> str:
         return f"Error: {str(e)}"
 
 @mcp.tool()
-def get_flitter_image_url(query: str = 'nature', color: str = 'blue', 
+def get_filter_image_url(query: str = 'nature', color: str = 'blue', 
                   orientation: str = 'landscape', page: int = 1, 
                   per_page: int = 30, order_by: str = 'popular', get_index: int = 0) -> str:
     """
-    根据用户提供的条件获取图片的URL。
-
-    参数:
-        query: (可选) 关键词，用于搜索图片（例如 'nature', 'city', 'mountains' 等）。
-        color: (可选) 颜色（'black_and_white', 'black', 'white', 'yellow', 'orange', 'red', 'purple', 'magenta', 'green', 'teal', 'blue'）
-        orientation: (可选) 图片方向（'landscape', 'portrait', 'squarish'）。
-        page: (可选) 页码，默认返回第一页的结果。
-        per_page: (可选) 每页返回的图片数量，默认30。
-        order_by: (可选) 排序方式，'latest', 'relevant', 'popular'。
-        get_index: (可选) 获取的图片索引，默认获取第0张图片的URL。
-
-    返回:
-        图片URL，若未找到则返回错误信息。
+    get flitter image url from unsplash using filters
+    
+    parameters:
+        query: str, default 'nature', the keyword to search for.
+        color: str, default 'blue', the color filter. ('black_and_white', 'black', 'white', 'yellow', 'orange', 'red', 'purple', 'magenta', 'green', 'teal', 'blue')
+        orientation: str, default 'landscape', the orientation of the image.('landscape', 'portrait', 'squarish')
+        page: int, default 1, the page number for pagination.
+        per_page: int, default 30, number of results per page.
+        order_by: str, default 'popular', the method to order.('latest', 'relevant', 'popular')
+        get_index: int, default 0, the index of the image to return from the results.
+    
+    return:
+        str: the url of the image or an error message.
     """
     url = f"https://api.unsplash.com/search/photos?client_id={Unsplash_KEY}"
 
@@ -135,16 +135,15 @@ def get_flitter_image_url(query: str = 'nature', color: str = 'blue',
 @mcp.tool()
 def download_one_image(image_url: str, save_dir: str = './imgs', img_name: str = "wallpaper.jpg") -> str:
     """
-    下载图片到指定目录
+    download one image from the given URL and save it to the specified directory.
+
+    parameters:
+        image_url: str, the URL of the image to download.
+        save_dir: str, default './imgs', the directory to save the image.
+        img_name: str, default 'wallpaper.jpg', the name of the saved image file.
     
-    参数:
-        image_url: 图片的URL地址字符串。
-        save_dir: 保存图片的目录，默认为脚本目录中的imgs。
-        img_name: 保存的图片名称，默认使用"wallpaper.jpg"。
-    
-    返回:
-        下载结果的字符串描述。
-    
+    return:
+        str: success or failure message.
     """
     response = requests.get(image_url)
     if response.status_code == 200:
@@ -152,30 +151,30 @@ def download_one_image(image_url: str, save_dir: str = './imgs', img_name: str =
         save_path.parent.mkdir(parents=True, exist_ok=True)
         with open(save_path, 'wb') as file:
             file.write(response.content)
-        return f"图片已成功保存到 {save_path.resolve()}"
+        return f"The image has been saved at {save_path.resolve()}"
     else:
-        return "下载图片失败！"
+        return f"Download failed, error code: {response.status_code}"
 
 @mcp.tool()
 def set_wallpaper(image_path: str) -> str:
     """
-    设置壁纸
+    set the wallpaper of the desktop to the image at the given path.
 
-    参数:
-        image_path: 图片的路径字符串。
-    返回:
-        设置壁纸结果的字符串描述。
+    parameters:
+        image_path: str, the path to the image file.
+    return:
+        str: success or failure message.
     
     """
     unicode_image_path = ctypes.c_wchar_p(image_path)
     result = ctypes.windll.user32.SystemParametersInfoW(20, 0, unicode_image_path, 3)
     if result:
-        return f"壁纸已成功设置为 {image_path}"
+        return f"The wallpaper has been set to {image_path}"
     else:
-        return "设置壁纸失败！"
+        return "Setting wallpaper failed."
 
 def test():
-    url = get_flitter_image_url(query='nature', color='blue', orientation='landscape')
+    url = get_filter_image_url(query='nature', color='blue', orientation='landscape')
     print(url)
     show_img(url)
 
